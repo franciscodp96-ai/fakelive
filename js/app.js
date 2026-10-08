@@ -8,7 +8,7 @@ const $ = id => document.getElementById(id);
 const form = $('settings-form');
 let live = null;
 
-const DEFAULTS = { handle: '', name: '', famousFor: '', avatar: '', pinnedText: '', targetViewers: 2400000, rampMinutes: 9, intensity: 1, llmEnabled: true, apiKey: '', model: 'claude-haiku-5-5' };
+const DEFAULTS = { handle: '', name: '', famousFor: '', avatar: '', pinnedText: '', targetViewers: 2400000, rampMinutes: 9, intensity: 1, llmEnabled: true, apiKey: '', model: 'claude-haiku-5-5', camRes: '720' };
 
 function loadSettings() {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { ...DEFAULTS }; }
@@ -28,7 +28,7 @@ function readForm(prev) {
   for (const el of form.elements) {
     if (!el.name || el.type === 'file' || el.type === 'submit') continue;
     if (el.type === 'checkbox') s[el.name] = el.checked;
-    else if (el.type === 'number' || el.tagName === 'SELECT') s[el.name] = Number(el.value);
+    else if (el.type === 'number' || (el.tagName === 'SELECT' && el.name !== 'camRes')) s[el.name] = Number(el.value);
     else s[el.name] = el.value.trim();
   }
   s.handle = s.handle.replace(/^@/, '');

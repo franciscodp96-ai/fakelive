@@ -110,3 +110,35 @@ export function famousComment() {
   const f = pick(FAMOUS);
   return { fan: { u: f.u, lang: 'cl', verified: true, place: 'Santiago' }, text: pick(f.t), famous: true };
 }
+
+// Nombre visible estable para un fan (lista de espectadores, invitaciones).
+function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+export function fanName(fan) {
+  const h = hash(fan.u);
+  const nombres = fan.lang === 'en' ? EN_NOMBRES : fan.lang === 'latam' ? LATAM_NOMBRES : CL_NOMBRES;
+  const n = nombres[h % nombres.length];
+  const a = CL_APELLIDOS[(h >>> 8) % CL_APELLIDOS.length];
+  return fan.lang === 'en' ? cap(n) : `${cap(n)} ${cap(a)}`;
+}
+
+// Preguntas del público (hoja "Preguntas").
+const PREGUNTAS = [
+  '¿Cuándo vienes a {ciudad}?', '¿Vas a sacar algo nuevo pronto?', '¿Cuál fue el momento más difícil de tu carrera?',
+  '¿Un consejo pa los que recién empiezan?', '¿Con quién te gustaría colaborar?', '¿Qué estás escuchando ahora?',
+  '¿Cómo manejas el hate?', '¿Qué haces en un día normal?', '¿Vas a hacer meet & greet?', '¿Cuál es tu comida favorita?',
+  '¿Me saludas? es mi cumple 🥺', '¿Cuál es tu mayor sueño ahora?', '¿Te acuerdas de cuando recién empezabas?',
+  '¿Qué le dirías a tu yo de hace 5 años?', '¿Vas a venir al sur? {ciudad} te espera', '¿Cuál ha sido tu mejor show?',
+  '¿Cómo es un día de gira?', '¿Qué opinas de la escena chilena hoy?', '¿Habrá merch nueva?', '¿Cuándo entrevista con {nombre}?',
+];
+export function questions(n = 8, ctx = {}) {
+  const out = [];
+  for (let i = 0; i < n; i++) { const fan = makeFan('cl'); out.push({ fan, text: fill(pick(PREGUNTAS), fan, ctx) }); }
+  return out;
+}
+
+// Avisos del sistema al iniciar (como los muestra Instagram al anfitrión).
+export const SYSTEM_NOTES = [
+  'Estamos avisando a tus seguidores que iniciaste un video en vivo.',
+  'Espera un momento. Estamos avisando a más seguidores para que se unan a tu video.',
+];

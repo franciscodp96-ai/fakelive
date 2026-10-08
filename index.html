@@ -2,13 +2,14 @@
 <html lang="es-CL">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <title>fakelive</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/controls.css">
 </head>
 <body>
 
@@ -30,6 +31,11 @@
       <legend>Live</legend>
       <label>Espectadores objetivo <input type="number" name="targetViewers" min="1000" step="1000" value="2400000"></label>
       <label>Minutos hasta llegar al objetivo <input type="number" name="rampMinutes" min="0.5" max="60" step="0.5" value="9"></label>
+      <label>Cámara <select name="camRes">
+        <option value="720" selected>Gran angular (720p)</option>
+        <option value="auto">Automática</option>
+        <option value="1080">Nítida (1080p, más recorte)</option>
+      </select></label>
       <label>Ritmo de comentarios <select name="intensity">
         <option value="0.6">Tranquilo</option>
         <option value="1" selected>Normal</option>
@@ -51,9 +57,10 @@
   <details class="help">
     <summary>Gestos ocultos durante el live</summary>
     <ul>
-      <li><b>Doble toque</b> en la mitad superior: ráfaga de comentarios, corazones y espectadores.</li>
-      <li><b>Toque largo</b> en la zona de comentarios: una cuenta verificada famosa comenta.</li>
-      <li><b>Toque largo</b> en la X: finalizar.</li>
+      <li><b>Doble toque</b> en el video (mitad superior): ráfaga de comentarios, corazones y espectadores.</li>
+      <li><b>Toque largo</b> sobre los comentarios: una cuenta verificada famosa comenta.</li>
+      <li><b>5 toques</b> en tu foto de perfil: panel de depuración.</li>
+      <li>Todo lo demás (X, micrófono, cámara, efectos, preguntas, invitar, compartir, opciones, contador) abre lo mismo que en Instagram.</li>
     </ul>
   </details>
 </section>
@@ -61,6 +68,8 @@
 <!-- ───── Live ───── -->
 <section id="screen-live" class="screen hidden">
   <video id="cam" autoplay playsinline muted></video>
+  <div id="cam-off" class="cam-off hidden"><img id="cam-off-avatar" class="avatar" alt=""></div>
+  <div id="shared" class="shared hidden"><img id="shared-img" alt=""><button id="shared-close" class="icon-btn" aria-label="Quitar"><svg viewBox="0 0 24 24"><use href="#i-close"/></svg></button></div>
   <div class="vignette"></div>
 
   <header class="top">
@@ -77,25 +86,28 @@
   </header>
 
   <aside class="rail">
-    <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-mic"/></svg></button>
-    <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-video"/></svg></button>
-    <button class="icon-btn" id="btn-flip"><svg viewBox="0 0 24 24"><use href="#i-flip"/></svg></button>
-    <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-sparkle"/></svg></button>
+    <button class="icon-btn toggle" id="btn-mic" aria-label="Micrófono"><svg viewBox="0 0 24 24"><use href="#i-mic"/></svg></button>
+    <button class="icon-btn toggle" id="btn-video" aria-label="Cámara"><svg viewBox="0 0 24 24"><use href="#i-video"/></svg></button>
+    <button class="icon-btn" id="btn-flip" aria-label="Voltear"><svg viewBox="0 0 24 24"><use href="#i-flip"/></svg></button>
+    <button class="icon-btn" id="btn-fx" aria-label="Efectos"><svg viewBox="0 0 24 24"><use href="#i-sparkle"/></svg></button>
   </aside>
 
   <div id="hearts" class="hearts"></div>
 
   <div class="bottom">
+    <div id="qcard" class="qcard hidden"></div>
     <div id="pinned" class="pinned hidden"></div>
     <ol id="comments" class="comments"></ol>
     <div class="bar">
-      <div class="comment-box"><span>Comentar…</span><svg viewBox="0 0 24 24"><use href="#i-more"/></svg></div>
-      <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-media"/></svg></button>
-      <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-invite"/></svg></button>
-      <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-question"/></svg></button>
-      <button class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg></button>
+      <form id="comment-form" class="comment-box" autocomplete="off"><input id="comment-input" placeholder="Agrega un comentario…" maxlength="200" enterkeyhint="send"><button type="button" id="btn-options" aria-label="Opciones"><svg viewBox="0 0 24 24"><use href="#i-more"/></svg></button></form>
+      <button class="icon-btn" id="btn-media" aria-label="Compartir contenido"><svg viewBox="0 0 24 24"><use href="#i-media"/></svg></button>
+      <button class="icon-btn" id="btn-invite" aria-label="Invitar"><svg viewBox="0 0 24 24"><use href="#i-invite"/></svg></button>
+      <button class="icon-btn" id="btn-question" aria-label="Preguntas"><svg viewBox="0 0 24 24"><use href="#i-question"/></svg></button>
+      <button class="icon-btn" id="btn-send" aria-label="Compartir"><svg viewBox="0 0 24 24"><use href="#i-send"/></svg></button>
     </div>
+    <div id="fx-tray" class="fx-tray hidden"></div>
   </div>
+  <input type="file" id="media-file" accept="image/*" hidden>
 
   <div id="debug" class="debug hidden"></div>
 </section>
@@ -124,6 +136,8 @@
   <symbol id="i-invite" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M14 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM2.5 20a7.5 7.5 0 0 1 15 0M19 8v6M16 11h6"/></symbol>
   <symbol id="i-question" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0-8.2-5.3L3 21l5.3-.8A9 9 0 0 0 12 21zM9.8 9.5a2.3 2.3 0 1 1 3.2 2.1c-.7.3-1 .8-1 1.4M12 16h0"/></symbol>
   <symbol id="i-send" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M21 3L3 10.5l8 2.5 2.5 8z M21 3l-10 10"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle fill="none" stroke="currentColor" stroke-width="1.6" cx="12" cy="12" r="9"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 11v5M12 8v.2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle fill="none" stroke="currentColor" stroke-width="1.8" cx="11" cy="11" r="6.5"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M16 16l4.5 4.5"/></symbol>
   <symbol id="i-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.8 8 3 4 6.8 4c2 0 3.6 1.1 4.4 2.5h1.6C13.6 5.1 15.2 4 17.2 4 21 4 23.2 8 21.6 11.8 19.5 16.4 12 21 12 21z"/></symbol>
 </svg>
 
