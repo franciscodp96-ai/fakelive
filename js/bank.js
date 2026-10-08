@@ -132,9 +132,8 @@ const PREGUNTAS = [
   '¿Cómo es un día de gira?', '¿Qué opinas de la escena chilena hoy?', '¿Habrá merch nueva?', '¿Cuándo entrevista con {nombre}?',
 ];
 export function questions(n = 8, ctx = {}) {
-  const out = [];
-  for (let i = 0; i < n; i++) { const fan = makeFan('cl'); out.push({ fan, text: fill(pick(PREGUNTAS), fan, ctx) }); }
-  return out;
+  const pool = [...PREGUNTAS].sort(() => Math.random() - 0.5).slice(0, n);
+  return pool.map(t => { const fan = makeFan('cl'); return { fan, text: fill(t, fan, ctx) }; });
 }
 
 // Avisos del sistema al iniciar (como los muestra Instagram al anfitrión).
