@@ -79,9 +79,11 @@ export class Live {
   // ── Cámara ──────────────────────────────────────────────────────────────
   async startCamera() {
     this.stopCamera();
-    const res = String(this.s.camRes || '720');
+    const res = String(this.s.camRes || '43');
     const size = res === '1080' ? { width: { ideal: 1920 }, height: { ideal: 1080 } }
-      : res === '720' ? { width: { ideal: 1280 }, height: { ideal: 720 } } : {};
+      : res === '720' ? { width: { ideal: 1280 }, height: { ideal: 720 } }
+      : res === '43' ? { width: { ideal: 1280 }, height: { ideal: 960 }, aspectRatio: { ideal: 4 / 3 } }
+      : res === 'min' ? { width: { ideal: 640 }, height: { ideal: 480 }, aspectRatio: { ideal: 4 / 3 } } : {};
     try {
       this.media = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.facing, ...size }, audio: false });
       const track = this.media.getVideoTracks()[0];

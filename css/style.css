@@ -9,6 +9,7 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html, body { margin: 0; height: 100%; background: #000; color: var(--text); font-family: var(--font); overscroll-behavior: none; }
 .hidden { display: none !important; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
@@ -42,18 +43,18 @@ input[type=file] { margin-top: 6px; font-size: 13px; color: #a8a8a8; }
 .vignette { position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to bottom, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%); }
 
-.top { position: absolute; left: 0; right: 0; top: calc(var(--safe-top) + 12px); padding: 0 12px; display: flex; align-items: center; justify-content: space-between; }
-.host { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.top { position: absolute; left: 0; right: 0; top: calc(var(--safe-top) + 12px); padding: 0 8px 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.host { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #333; flex: none; }
-.handle { font-weight: 600; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw; }
+.handle { font-weight: 600; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .verified { width: 14px; height: 14px; flex: none; }
-.top-right { display: flex; align-items: center; gap: 8px; }
-.live-badge { background: var(--ig-red); color: #fff; font-weight: 700; font-size: 11px; letter-spacing: .04em; padding: 4px 7px; border-radius: 4px; line-height: 1; }
-.viewers { display: inline-flex; align-items: center; gap: 4px; background: var(--pill); border-radius: 4px; padding: 3px 7px 3px 5px; font-size: 12px; font-weight: 600; line-height: 1; }
+.top-right { display: flex; align-items: center; gap: 6px; flex: none; }
+.live-badge { background: var(--ig-red); color: #fff; font-weight: 700; font-size: 11px; letter-spacing: .04em; padding: 5px 7px; border-radius: 4px; line-height: 1; white-space: nowrap; }
+.viewers { display: inline-flex; align-items: center; gap: 4px; background: var(--pill); border-radius: 4px; padding: 4px 7px 4px 5px; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
 .viewers svg { width: 14px; height: 14px; }
 .icon-btn { width: 40px; height: 40px; display: grid; place-items: center; color: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
 .icon-btn svg { width: 26px; height: 26px; }
-#btn-close svg { width: 24px; height: 24px; }
+#btn-close { width: 36px; } #btn-close svg { width: 24px; height: 24px; }
 
 .rail { position: absolute; right: 6px; top: calc(var(--safe-top) + 72px); display: flex; flex-direction: column; gap: 10px; }
 
@@ -73,8 +74,9 @@ input[type=file] { margin-top: 6px; font-size: 13px; color: #a8a8a8; }
 .comment.notice .t { color: #d8d8d8; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-.bar { display: flex; align-items: center; gap: 2px; padding: 0 8px 0 12px; }
-.comment-box { flex: 1; display: flex; align-items: center; justify-content: space-between; height: 40px; border: 1px solid rgba(255,255,255,.55); border-radius: 22px; padding: 0 12px 0 14px; color: rgba(255,255,255,.85); font-size: 14px; }
+.bar { display: flex; align-items: center; gap: 0; padding: 0 6px 0 12px; }
+.bar .icon-btn { width: 36px; } .bar .icon-btn svg { width: 24px; height: 24px; }
+.comment-box { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; height: 40px; border: 1px solid rgba(255,255,255,.55); border-radius: 22px; padding: 0 8px 0 12px; margin-right: 4px; color: rgba(255,255,255,.85); font-size: 14px; }
 .comment-box svg { width: 20px; height: 20px; }
 
 /* corazones */

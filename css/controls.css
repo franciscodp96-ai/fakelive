@@ -11,9 +11,9 @@
 #screen-live.sharing .rail { top: calc(var(--safe-top) + 56px + 38vw + 10px); }
 
 .comment-box { gap: 6px; }
-.comment-box input { flex: 1; min-width: 0; background: none; border: 0; outline: none; color: #fff; font: inherit; font-size: 14px; padding: 0; margin: 0; }
+.comment-box input { flex: 1; min-width: 0; background: none; border: 0; outline: none; color: #fff; font: inherit; font-size: 14px; padding: 0; margin: 0; text-overflow: ellipsis; }
 .comment-box input::placeholder { color: rgba(255,255,255,.85); }
-#btn-options { width: 28px; height: 28px; display: grid; place-items: center; }
+#btn-options { width: 24px; height: 28px; flex: none; display: grid; place-items: center; }
 #btn-options svg { width: 20px; height: 20px; }
 .comment.sys { align-items: center; gap: 10px; background: rgba(38,38,38,.72); border-radius: 12px; padding: 10px 12px; margin-right: -60px; color: #e8e8e8; text-shadow: none; }
 .comment.sys .info { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #bdbdbd; display: grid; place-items: center; flex: none; color: #bdbdbd; }
