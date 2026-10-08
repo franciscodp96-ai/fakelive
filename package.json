@@ -1,0 +1,6 @@
+{
+  "name": "fakelive",
+  "private": true,
+  "type": "module",
+  "scripts": { "serve": "node tools/serve.mjs" }
+}
