@@ -54,7 +54,6 @@ function show(id) {
 }
 
 async function goFullscreen() {
-  try { await document.documentElement.requestFullscreen?.({ navigationUI: 'hide' }); } catch { }
   try { await screen.orientation?.lock?.('portrait'); } catch { }
 }
 
@@ -78,7 +77,7 @@ function endLive() {
   console.log('[fakelive] resumen', r);
 }
 
-$('btn-done').addEventListener('click', () => { document.exitFullscreen?.().catch?.(() => { }); show('screen-settings'); });
+$('btn-done').addEventListener('click', () => show('screen-settings'));
 
 // Avisos de entorno en la pantalla de ajustes.
 function envWarnings() {

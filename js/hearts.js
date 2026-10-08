@@ -1,7 +1,7 @@
 // Corazones flotantes que nacen abajo a la derecha y suben serpenteando.
 import { rand, pick } from './format.js';
 
-const COLORS = ['#ff3040', '#ff3040', '#ff3040', '#ff6b81', '#ff2d95', '#ff8a5c', '#c13584', '#e1306c', '#fd1d1d', '#f77737'];
+const COLORS = ['#ff3040', '#ff3040', '#ff3040', '#ff6b81', '#ff2d95', '#ff8a5c', '#c13584', '#7b61ff', '#ffd600', '#f77737'];
 
 export class Hearts {
   constructor(container) {

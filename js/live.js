@@ -106,7 +106,7 @@ export class Live {
     const v = this.curve.tick();
     $('viewer-count').textContent = fmtViewers(v);
     this.stream.setViewers(v);
-    this.hearts.setRate(Math.min(4.5, 0.4 + Math.log10(Math.max(100, v) / 100) * 0.9) * this.s.intensity);
+    this.hearts.setRate(Math.min(8, 0.6 + Math.log10(Math.max(100, v) / 100) * 1.5) * this.s.intensity);
   }
 
   // ── Chat ────────────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ export class Live {
       if (!it.host && this.seen.length < 64 && !this.seen.includes(fan.u)) this.seen.push(fan.u);
     }
     ol.appendChild(li);
-    while (ol.childElementCount > 9) ol.firstElementChild.remove();
+    while (ol.childElementCount > 7) ol.firstElementChild.remove();
   }
 
   async reactiveTick() {

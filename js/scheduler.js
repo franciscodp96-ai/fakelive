@@ -23,7 +23,7 @@ export class Stream {
   perMinute() {
     const v = Math.max(100, this.viewers);
     const base = 6 + 14 * Math.log10(v / 100);
-    return Math.min(78, base) * this.intensity;
+    return Math.min(120, base * 1.35) * this.intensity;
   }
 
   pushTanda(items) {
@@ -41,7 +41,7 @@ export class Stream {
     let wait = 60000 / this.perMinute() * rand(0.45, 1.7);
     if (Date.now() < this.burstUntil) wait *= 0.35;
     if (this.reactive.length > 6) wait *= 0.7;
-    this.timer = setTimeout(() => this.loop(), Math.max(220, wait));
+    this.timer = setTimeout(() => this.loop(), Math.max(150, wait));
   }
 
   next() {

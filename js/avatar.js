@@ -37,7 +37,7 @@ function abstractAvatar(seed) {
 export function avatarFor(username) {
   const h = hash(username);
   if (photos.length) return photos[h % photos.length];
-  return (h % 100) < 32 ? SILHOUETTE : abstractAvatar(h);
+  return SILHOUETTE;
 }
 
 export const hostFallbackAvatar = SILHOUETTE;

@@ -30,6 +30,7 @@ function username(lang) {
   ];
   let u = pick(forms)().replace(/[^a-z0-9._]/g, '').replace(/[._]{3,}/g, '_');
   if (chance(0.3)) u = u.replace(/i/g, 'y').replace(/ck/g, 'k');
+  u = u.replace(/^[._]+|[._]+$/g, '');
   return u.slice(0, 24);
 }
 
