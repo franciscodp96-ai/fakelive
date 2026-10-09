@@ -4,7 +4,7 @@ import { Stream } from './scheduler.js';
 import { Hearts } from './hearts.js';
 import { Listener } from './stt.js';
 import { generateTanda } from './llm.js';
-import { fmtViewers, rand, pick, randInt } from './format.js';
+import { fmtViewers, randInt } from './format.js';
 import { avatarFor } from './avatar.js';
 import { makeFan, fanName, questions, SYSTEM_NOTES } from './bank.js';
 import { sheet, menu, confirmEnd, toast, closeSheet, esc } from './ui.js';
@@ -34,6 +34,7 @@ export class Live {
     this.questions = [];       // { fan, text }
     this.viewerFans = [];      // lista estable para la hoja "Espectadores"
     this.invited = new Set(); this.shared = new Set(); this.mods = new Set();
+    this.wingmanUntil = 0;     // el modo wingman está encendido hasta este instante
   }
 
   async start() {
@@ -68,7 +69,7 @@ export class Live {
     if (s.llmEnabled && s.apiKey) {
       this.stt = new Listener({ lang: 'es-CL', onStatus: m => this.debug(m) });
       if (!this.stt.start()) this.debug('stt: no soportado en este navegador');
-      this.lastTake = Date.now();
+      this.lastTake = this.lastVisual = Date.now();
       this.llmTimer = setInterval(() => this.reactiveTick(), 6500);
     } else this.debug('reactivo: desactivado (sin clave o apagado)');
 
@@ -122,7 +123,10 @@ export class Live {
       li.className = 'comment' + (it.notice ? ' notice' : '') + (it.host ? ' host' : '');
       const ver = fan.verified ? '<svg viewBox="0 0 24 24"><use href="#i-verified"/></svg>' : '';
       const av = it.host ? this.hostAvatar : avatarFor(fan.u);
-      li.innerHTML = `<img class="avatar" src="${av}" alt=""><div class="body"><span class="u">${esc(fan.u)}${ver}</span><span class="t">${esc(it.text)}</span></div>`;
+      // Insignias: Instagram muestra de 1 a 3 corazones junto al nombre de quien las compró.
+      const badge = it.badge ? `<span class="badge">${'<svg viewBox="0 0 24 24"><use href="#i-heart"/></svg>'.repeat(it.badge)}</span>` : '';
+      if (it.badge) this.hearts.burst(8 * it.badge);
+      li.innerHTML = `<img class="avatar" src="${av}" alt=""><div class="body"><span class="u">${esc(fan.u)}${ver}${badge}</span><span class="t">${esc(it.text)}</span></div>`;
       if (!it.notice && !it.host) {
         this.recentTexts.push(it.text);
         if (this.recentTexts.length > 24) this.recentTexts.shift();
@@ -134,40 +138,70 @@ export class Live {
     while (ol.childElementCount > 7) ol.firstElementChild.remove();
   }
 
-  async reactiveTick() {
-    if (this.busy || !this.stt) return;
-    const { text, interim, words } = this.stt.takeSince(this.lastTake);
-    if (words < 3) return;
-    this.lastTake = Date.now();
+  // Cuadro: foto chica de la cámara para que los fans reaccionen a lo que se ve. Devuelve base64 JPEG o null.
+  captureFrame() {
+    if (!this.s.visionEnabled || this.camOff || $('screen-live').classList.contains('sharing')) return null;
+    const v = $('cam');
+    if (!v.videoWidth) return null;
+    const k = 512 / Math.max(v.videoWidth, v.videoHeight);
+    const c = this.frameCanvas ||= document.createElement('canvas');
+    c.width = Math.round(v.videoWidth * k); c.height = Math.round(v.videoHeight * k);
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.6).split(',')[1] || null;
+  }
+
+  // Una tanda sale cuando el anfitrión habló, o en silencio cada cierto tiempo si hay cuadro que mostrar.
+  async reactiveTick(force = false) {
+    if (this.busy) return;
+    const now = Date.now();
+    const wingman = now < this.wingmanUntil;
+    const heard = this.stt?.takeSince(this.lastTake) || { text: '', interim: '', words: 0 };
+    const spoke = heard.words >= 3;
+    if (!spoke && !force && now - this.lastVisual < (wingman ? 12000 : 25000)) return;
+    const frame = this.captureFrame();
+    if (!spoke && !frame) return;
+    if (spoke) this.lastTake = now;
+    if (frame) this.lastVisual = now;
+    const text = spoke ? heard.text : '';
     this.busy = true;
     const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 9000);
+    const to = setTimeout(() => ctrl.abort(), 12000);
     try {
       this.stats.llmCalls++;
       const tanda = await generateTanda({
-        settings: this.s, transcript: text, interim, recent: this.recentTexts.slice(-16),
-        viewers: fmtViewers(this.curve.value), signal: ctrl.signal,
+        settings: this.s, transcript: text, interim: spoke ? heard.interim : '', recent: this.recentTexts.slice(-16),
+        viewers: fmtViewers(this.curve.value), frame, wingman, signal: ctrl.signal,
       });
+      if (!wingman) for (const x of tanda) x.b = 0;
       this.stream.pushTanda(tanda);
       // Las preguntas de la tanda alimentan la hoja "Preguntas".
       for (const q of tanda.filter(x => /\?/.test(x.t)).slice(0, 3)) this.questions.unshift({ fan: makeFan(q.l), text: q.t });
       this.questions = this.questions.slice(0, 30);
-      this.debug(`tanda ${tanda.length} ← "${text.slice(0, 50)}"`);
+      this.debug(`tanda ${tanda.length}${frame ? ' +cuadro' : ''}${wingman ? ' +wingman' : ''} ← "${text.slice(0, 50)}"`);
     } catch (e) {
       this.stats.llmErrors++;
       this.debug('llm: ' + (e.name === 'AbortError' ? 'timeout' : e.message));
     } finally { clearTimeout(to); this.busy = false; }
   }
 
-  // ── Gestos ocultos: doble toque en el video = ráfaga; toque largo en comentarios = famoso; 5 toques en la foto = debug.
+  // Modo wingman: dura 90 s y se apaga solo; un segundo doble toque lo apaga antes. Sin señal visible fuera del debug.
+  toggleWingman() {
+    const on = !(Date.now() < this.wingmanUntil);
+    this.wingmanUntil = on ? Date.now() + 90000 : 0;
+    clearTimeout(this.wingmanTimer);
+    if (on) this.wingmanTimer = setTimeout(() => this.debug('wingman: apagado (tiempo)'), 90000);
+    this.debug('wingman: ' + (on ? 'encendido 90 s' : 'apagado'));
+    if (on && this.llmTimer) this.reactiveTick(true);
+  }
+
+  // ── Gestos ocultos: doble toque en el video = modo wingman; toque largo en comentarios = famoso; 5 toques en la foto = debug.
   bindGestures() {
     const scr = $('screen-live');
     let lastTap = 0, pressTimer = null;
     scr.addEventListener('pointerdown', e => {
       if (e.target.closest('button, input, .sheet-root, .confirm-root, .bar, .rail, .top')) return;
-      const y = e.clientY / innerHeight;
       const now = Date.now();
-      if (y < 0.5 && now - lastTap < 320) { this.burst(); lastTap = 0; } else lastTap = now;
+      if (now - lastTap < 320) { this.toggleWingman(); lastTap = 0; } else lastTap = now;
       clearTimeout(pressTimer);
       if (e.target.closest('.comments')) pressTimer = setTimeout(() => this.stream.famous(), 650);
     });
@@ -321,12 +355,6 @@ export class Live {
     $('media-file').value = '';
   }
 
-  burst() {
-    this.curve.burst();
-    this.stream.burst();
-    this.hearts.burst(Math.round(rand(35, 60)));
-  }
-
   debug(m) {
     this.debugLines.push(new Date().toLocaleTimeString('es-CL') + ' ' + m);
     if (this.debugLines.length > 10) this.debugLines.shift();
@@ -335,7 +363,7 @@ export class Live {
   }
 
   stop() {
-    clearInterval(this.viewerTimer); clearInterval(this.llmTimer); clearTimeout(this.sysTimer);
+    clearInterval(this.viewerTimer); clearInterval(this.llmTimer); clearTimeout(this.sysTimer); clearTimeout(this.wingmanTimer);
     this.stream?.stop(); this.hearts?.stop(); this.stt?.stop();
     this.stopCamera();
     this.wakeLock?.release?.();

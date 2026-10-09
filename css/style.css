@@ -22,7 +22,8 @@ fieldset { border: 1px solid #262626; border-radius: 12px; padding: 14px 14px 6p
 legend { padding: 0 6px; color: #a8a8a8; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
 label { display: block; font-size: 14px; color: #e0e0e0; margin-bottom: 12px; }
 label.row { display: flex; align-items: center; gap: 10px; }
-input:not([type=checkbox]):not([type=file]), textarea, select {
+/* :where() deja esta regla sin especificidad: los campos dentro del live (comentario, buscador) la pisan con una clase. */
+:where(input:not([type=checkbox]):not([type=file]), textarea, select) {
   display: block; width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; font-size: 15px; color: #fff;
   background: #121212; border: 1px solid #363636; border-radius: 8px; outline: none;
 }
@@ -70,6 +71,8 @@ input[type=file] { margin-top: 6px; font-size: 13px; color: #a8a8a8; }
 .comment .body { min-width: 0; word-wrap: break-word; }
 .comment .u { font-weight: 600; margin-right: 5px; display: inline-flex; align-items: center; gap: 3px; vertical-align: top; }
 .comment .u svg { width: 14px; height: 14px; }
+.comment .u .badge { display: inline-flex; gap: 1px; color: #ff3d8b; }
+.comment .u .badge svg { width: 12px; height: 12px; }
 .comment.notice .body { color: #e6e6e6; }
 .comment.notice .t { color: #d8d8d8; }
 @keyframes rise { from { opacity: .6; transform: translateY(6px); } to { opacity: 1; transform: none; } }

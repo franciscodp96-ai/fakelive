@@ -48,9 +48,11 @@
     <fieldset>
       <legend>Voz y comentarios reactivos</legend>
       <label class="row"><input type="checkbox" name="llmEnabled" checked> Fans responden a lo que digo</label>
+      <label class="row"><input type="checkbox" name="visionEnabled" checked> Fans ven el video</label>
+      <label>Consigna para este live (opcional) <textarea name="consigna" rows="3" placeholder="Una regla por línea. Ej.: Hoy estoy en un matrimonio, saluden a los novios."></textarea></label>
       <label>Clave API de Anthropic <input type="password" name="apiKey" placeholder="sk-ant-…"></label>
       <label>Modelo <input name="model" value="claude-haiku-5-5"></label>
-      <p class="hint">La clave se guarda solo en este celular. Pide micrófono y cámara al iniciar.</p>
+      <p class="hint">La clave se guarda solo en este celular. Pide micrófono y cámara al iniciar. Con "Fans ven el video", cada pocos segundos se envía una foto de la cámara a Anthropic.</p>
     </fieldset>
 
     <button type="submit" class="primary">Iniciar video en vivo</button>
@@ -59,7 +61,7 @@
   <details class="help">
     <summary>Gestos ocultos durante el live</summary>
     <ul>
-      <li><b>Doble toque</b> en el video (mitad superior): ráfaga de comentarios, corazones y espectadores.</li>
+      <li><b>Doble toque</b> en el video: modo wingman por 90 segundos (otro doble toque lo apaga antes).</li>
       <li><b>Toque largo</b> sobre los comentarios: una cuenta verificada famosa comenta.</li>
       <li><b>5 toques</b> en tu foto de perfil: panel de depuración.</li>
       <li>Todo lo demás (X, micrófono, cámara, efectos, preguntas, invitar, compartir, opciones, contador) abre lo mismo que en Instagram.</li>

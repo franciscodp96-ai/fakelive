@@ -8,7 +8,7 @@ const $ = id => document.getElementById(id);
 const form = $('settings-form');
 let live = null;
 
-const DEFAULTS = { handle: '', name: '', famousFor: '', avatar: '', pinnedText: '', targetViewers: 2400000, rampMinutes: 9, intensity: 1, llmEnabled: true, apiKey: '', model: 'claude-haiku-5-5', camRes: '43' };
+const DEFAULTS = { handle: '', name: '', famousFor: '', avatar: '', pinnedText: '', targetViewers: 2400000, rampMinutes: 9, intensity: 1, llmEnabled: true, visionEnabled: true, consigna: '', apiKey: '', model: 'claude-haiku-5-5', camRes: '43' };
 
 function loadSettings() {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { ...DEFAULTS }; }

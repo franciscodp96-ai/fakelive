@@ -9,7 +9,6 @@ export class ViewerCurve {
     this.start = Math.round(rand(180, 900));
     this.t0 = performance.now();
     this.drift = 0;       // ruido lento, con reversión a la media
-    this.boost = 0;       // ráfagas (fracción del objetivo), decaen
     this.peak = this.start;
     this.value = this.start;
     this.lastTick = this.t0;
@@ -33,13 +32,10 @@ export class ViewerCurve {
     // Caída/subida ocasional breve (alguien famoso lo compartió, o se cayó la red de muchos).
     if (chance(0.004 * dt)) this.drift += rand(-0.02, 0.025);
 
-    this.boost *= Math.exp(-dt / 22);
     const micro = rand(-0.0025, 0.0025);
 
-    this.value = Math.max(this.start, Math.round(base * (1 + this.drift + this.boost + micro)));
+    this.value = Math.max(this.start, Math.round(base * (1 + this.drift + micro)));
     if (this.value > this.peak) this.peak = this.value;
     return this.value;
   }
-
-  burst() { this.boost += rand(0.04, 0.08); }
 }

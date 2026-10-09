@@ -8,7 +8,7 @@ export class Hearts {
     this.el = container;
     this.rate = 0.8;       // corazones por segundo
     this.timer = null;
-    this.extra = 0;        // ráfaga pendiente
+    this.extra = 0;        // corazones extra pendientes (llegó una insignia)
   }
 
   start() { this.stop(); this.active = true; this.loop(); }

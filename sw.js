@@ -1,8 +1,8 @@
 // Cache mínimo para que la PWA abra sin red. Las llamadas a la API nunca pasan por aquí.
-const CACHE = 'fakelive-v4';
+const CACHE = 'fakelive-v5';
 const ASSETS = ['./', './index.html', './css/style.css', './manifest.webmanifest', './icons/icon.svg',
   './js/app.js', './js/live.js', './js/bank.js', './js/viewers.js', './js/scheduler.js',
-  './js/hearts.js', './js/stt.js', './js/llm.js', './js/format.js', './js/avatar.js', './js/ui.js', './css/controls.css'];
+  './js/hearts.js', './js/stt.js', './js/llm.js', './js/consignas.js','./js/format.js', './js/avatar.js', './js/ui.js', './css/controls.css'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
