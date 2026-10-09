@@ -28,11 +28,13 @@ export class Listener {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') this.active = false;
     };
     r.onend = () => {
+      // Si Chrome corta con palabras a medio reconocer, se conservan en vez de perderse.
+      if (this.interim) { this.segments.push({ t: Date.now(), text: this.interim }); this.interim = ''; }
       this.onStatus('stt:end');
       if (!this.active) return;
-      // Chrome corta el reconocimiento tras silencios; se reinicia con una pausa corta.
+      // Chrome corta el reconocimiento tras silencios; se reinicia casi de inmediato, salvo tras un error real.
       this.restarts++;
-      setTimeout(() => { if (this.active) this.safeStart(); }, this.lastError === 'no-speech' ? 250 : 600);
+      setTimeout(() => { if (this.active) this.safeStart(); }, this.lastError && this.lastError !== 'no-speech' ? 600 : 50);
       this.lastError = null;
     };
   }
