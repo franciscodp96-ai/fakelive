@@ -1,5 +1,5 @@
 // Arranque: ajustes persistentes, cambio de pantallas y ciclo de vida del Live.
-import { Live } from './live.js';
+import { Live, LOG_KEY } from './live.js';
 import { fmtViewers } from './format.js';
 import { avatarFor, loadAvatarPack } from './avatar.js';
 
@@ -78,6 +78,21 @@ function endLive() {
 }
 
 $('btn-done').addEventListener('click', () => show('screen-settings'));
+
+// Registro del último live: al portapapeles; si el navegador no deja, queda a la vista para copiarlo a mano.
+$('btn-copy-log').addEventListener('click', async () => {
+  const btn = $('btn-copy-log'), box = $('log-text');
+  let log = '';
+  try { log = localStorage.getItem(LOG_KEY) || ''; } catch { }
+  if (!log) { btn.textContent = 'Aún no hay registro'; return; }
+  try {
+    await navigator.clipboard.writeText(log);
+    btn.textContent = `Copiado (${log.split('\n').length} líneas)`;
+  } catch {
+    box.value = log; box.classList.remove('hidden'); box.select();
+    btn.textContent = 'Copia el texto de abajo';
+  }
+});
 
 // Avisos de entorno en la pantalla de ajustes.
 function envWarnings() {

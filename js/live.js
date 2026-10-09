@@ -10,6 +10,7 @@ import { makeFan, fanName, questions, SYSTEM_NOTES } from './bank.js';
 import { sheet, menu, confirmEnd, toast, closeSheet, esc } from './ui.js';
 
 const $ = id => document.getElementById(id);
+export const LOG_KEY = 'fakelive.log.v1';
 
 const FILTERS = [
   { n: 'Normal', f: 'none', bg: 'linear-gradient(135deg,#999,#444)' },
@@ -28,6 +29,7 @@ export class Live {
     this.recentTexts = [];     // últimos textos mostrados (para no repetir)
     this.facing = 'user';
     this.debugLines = [];
+    this.logLines = [];
     this.stats = { llmCalls: 0, llmErrors: 0, reactive: 0 };
     this.muted = false; this.camOff = false; this.commentsOff = false;
     this.filter = 0;
@@ -39,6 +41,7 @@ export class Live {
 
   async start() {
     const s = this.s;
+    this.record(`=== live ${new Date().toISOString()} · modelo ${s.model} · reactivo ${s.llmEnabled && s.apiKey ? 'sí' : 'no'} · video ${s.visionEnabled ? 'sí' : 'no'} · consigna «${s.consigna || ''}»`);
     this.hostAvatar = s.avatar || avatarFor(s.handle);
     $('host-handle').textContent = s.handle;
     $('host-avatar').src = this.hostAvatar;
@@ -177,7 +180,9 @@ export class Live {
       // Las preguntas de la tanda alimentan la hoja "Preguntas".
       for (const q of tanda.filter(x => /\?/.test(x.t)).slice(0, 3)) this.questions.unshift({ fan: makeFan(q.l), text: q.t });
       this.questions = this.questions.slice(0, 30);
-      this.debug(`tanda ${tanda.length}${frame ? ' +cuadro' : ''}${wingman ? ' +wingman' : ''} ← "${text.slice(0, 50)}"`);
+      this.debug(`tanda ${tanda.length}${frame ? ' +cuadro' : ''}${wingman ? ' +wingman' : ''} en ${Date.now() - now} ms ← "${text.slice(0, 50)}"`);
+      if (text.length > 50) this.record(`   dijo: «${text}»`);
+      for (const x of tanda) this.record(`   · [${x.l}]${'♥'.repeat(x.b)} ${x.t}`);
     } catch (e) {
       this.stats.llmErrors++;
       this.debug('llm: ' + (e.name === 'AbortError' ? 'timeout' : e.message));
@@ -356,10 +361,19 @@ export class Live {
   }
 
   debug(m) {
-    this.debugLines.push(new Date().toLocaleTimeString('es-CL') + ' ' + m);
+    const line = new Date().toLocaleTimeString('es-CL', { hour12: false }) + ' ' + m;
+    this.debugLines.push(line);
     if (this.debugLines.length > 10) this.debugLines.shift();
     $('debug').textContent = this.debugLines.join('\n');
     console.log('[fakelive]', m);
+    this.record(line);
+  }
+
+  // Registro completo del live: queda en este dispositivo para copiarlo desde los ajustes y revisarlo después.
+  record(line) {
+    this.logLines.push(line);
+    if (this.logLines.length > 800) this.logLines.shift();
+    try { localStorage.setItem(LOG_KEY, this.logLines.join('\n')); } catch { }
   }
 
   stop() {
